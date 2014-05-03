@@ -1,4 +1,5 @@
-""" A class of helper functions to parse a command """
+""" A class of helper functions to parse a command
+    All commands are space-delimited, for example get 1 9 """
 
 
 def get_action(command):
