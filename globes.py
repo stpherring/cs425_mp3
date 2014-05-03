@@ -8,11 +8,12 @@ from datastore import Datastore
 def init(num):
     """ Initialization function. Must be explicitly called: globes.init(n) """
 
-    global server_num
-    global delays
-    global addresses
-    global sock
-    global db
+    global server_num       # this server's number (i.e. this instance)
+    global total_servers    # the total number of servers in the system (usually 4)
+    global sock             # this server's UDP socket
+    global db               # this server's Datastore object
+    global delays           # delays[i] returns the avg delay from this server to server i
+    global addresses        # addresses[i] returns the 'localhost:1500#' of server i
 
     server_num = num
 
@@ -25,6 +26,8 @@ def init(num):
     data = json.load(config_json)
     delays = data['avg_delays'][server_num] # delays is a list of avg delay times
     addresses = data['addresses']
+
+    total_servers = len(addresses)
 
 
 def get_address(server_num):

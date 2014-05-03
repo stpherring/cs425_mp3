@@ -38,5 +38,11 @@ def send_command(dest_server_num, command):
 
 
 def create_timestamp():
-    """ Get the current time (in milliseconds) to be preprended to every message """
-    return time.time() * 1000
+    """ Get the current time (in floating point seconds) to be preprended to every message """
+    return time.time()
+
+
+
+def hash(key):
+    """ The hash function used to map a key to a server in the chord """
+    return key % globes.total_servers

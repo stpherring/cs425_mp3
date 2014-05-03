@@ -23,6 +23,8 @@ def execute(command, time):
     action = params[0]
     key = params[1]
 
+    print "key {0} hashes to {1}".format(key, hash(int(key)))
+
     if action == "get" and len(params) == 3:
         level = int(params[2])
         globes.db.get(key, level)
