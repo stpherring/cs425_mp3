@@ -2,6 +2,7 @@
 
 import socket
 import json
+from datastore import Datastore
 
 
 def init(num):
@@ -11,10 +12,13 @@ def init(num):
     global delays
     global addresses
     global sock
+    global db
 
     server_num = num
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    db = Datastore()
 
     # read in the config.json file to initialize delays and addresses
     config_json = open('config.json')

@@ -2,7 +2,6 @@ import socket
 import sys
 from thread import *
 import globes
-from commands import *
 from utils import *
 
 
@@ -26,20 +25,20 @@ def execute(command):
 
     if action == "get" and len(params) == 3:
         level = int(params[2])
-        get(key, level)
+        globes.db.get(key, level)
 
     elif action == "insert" and len(params) == 4:
         value = params[2]
         level = int(params[3])
-        insert(key, value, level)
+        globes.db.insert(key, value, level)
 
     elif action == "update" and len(params) == 4:
         value = params[2]
         level = int(params[3])
-        update(key, value, level)
+        globes.db.update(key, value, level)
 
     elif action == "delete" and len(params) == 2:
-        delete(key)
+        globes.db.delete(key)
 
     else:
         return False

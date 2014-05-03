@@ -1,4 +1,4 @@
-""" Implementation of the four key-value datastore and its commands:
+""" A key-value datastore.  The datastore supports the following operations:
         get, insert, update, delete """
 
 import globes
