@@ -20,7 +20,7 @@ class Datastore:
 
     def update(self, key, value):
         print "updating (" + str(key) + ", " + str(value) + ")"
-        if key in kv_store
+        if key in kv_store:
             self.kv_store[key] = value
 
     def delete(self, key):
