@@ -1,4 +1,6 @@
 {
+
+    "_comments" : "avg_delays[x][i] returns a the average delay time from server x to server i",
     
     "addresses" : [ "localhost:15000",
                     "localhost:15001",
