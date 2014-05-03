@@ -28,11 +28,13 @@ def coordinate_command(command, time):
         print "waiting for get values"
         value, addr = globes.reply_sock.recvfrom(4096)
         print "received value: " + value
+
     elif is_insert(command):
         # wait to receive success message from one or all replicas
         print "waiting for insert success"
         success, addr = globes.reply_sock.recvfrom(4096)
         print "received success message: " + success
+        
     elif is_update(command):
         # wait to receive success message from one or all replicas
         print "waiting for update success"
