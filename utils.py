@@ -4,6 +4,7 @@ import socket
 import globes
 import random
 
+
 def parse_addr(address):
     """ Given an address like localhost:15000, return a pair (host_ip, port) """
     ip_components = address.split(':')
@@ -29,5 +30,6 @@ def random_delay(dest_server_num):
 
 def send_command(dest_server_num, command):
     """ Send a command to a server with the specified server numer """
+    random_delay( dest_server_num )
     addr = globes.get_address( dest_server_num )
     globes.sock.sendto(command, addr)

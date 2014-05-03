@@ -6,7 +6,7 @@ import globes
 class Datastore:
 
     def __init__(self):
-        self.db = dict()
+        self.kv_store = dict()
 
 
     def get(self, key, level):
