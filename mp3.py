@@ -6,9 +6,9 @@ from utils import *
 
 
 
-def process_input(command):
+def process_input(command, time):
     try:
-        success = execute(command)
+        success = execute(command, time)
         if not success:
             print "Invalid command"
     except IndexError:
@@ -16,7 +16,7 @@ def process_input(command):
 
 
 
-def execute(command):
+def execute(command, time):
     """ Execute a command either from the command prompt or from a message
         Returns True if the command is valid, else False. """
     params = command.split(" ")
@@ -77,7 +77,8 @@ def main(argv):
     print "***** Enter a command *****"
     while True:
         command = raw_input(">>>")
-        process_input(command)
+        time = create_timestamp()
+        process_input(command, time)
 
 
 

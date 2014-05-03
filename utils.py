@@ -3,6 +3,7 @@
 import socket
 import globes
 import random
+import time
 
 
 def parse_addr(address):
@@ -33,3 +34,9 @@ def send_command(dest_server_num, command):
     random_delay( dest_server_num )
     addr = globes.get_address( dest_server_num )
     globes.sock.sendto(command, addr)
+
+
+
+def create_timestamp():
+    """ Get the current time (in milliseconds) to be preprended to every message """
+    return time.time() * 1000
