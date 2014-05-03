@@ -17,7 +17,8 @@ def init(num):
     global db               # this server's Datastore object
     global delays           # delays[i] returns the avg delay from this server to server i
     global addresses        # addresses[i] returns the 'localhost:1500#' of server i
-
+    global num_replicas     # number of replicas for each key
+    global command_counter  # counter for the number of commands send
     server_num = num
 
     command_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -32,6 +33,8 @@ def init(num):
     addresses = data['addresses']
 
     total_servers = len(addresses)
+
+    num_replicase = 3
 
 
 def get_command_address(server_num):
