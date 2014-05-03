@@ -5,6 +5,7 @@ import json
 
 
 def init(num):
+    """ Initialization function. Must be explicitly called: globes.init(n) """
 
     global server_num
     global delays

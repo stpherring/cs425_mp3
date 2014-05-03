@@ -3,6 +3,7 @@ import sys
 from thread import *
 import globes
 from commands import *
+from utils import *
 
 
 
@@ -57,20 +58,6 @@ def recv_thread(args):
 
 
 
-def parse_addr(address):
-    """ Given an address like localhost:15000, return a pair (host_ip, port) """
-    ip_components = address.split(':')
-    host = ip_components[0]
-    port = int(float(ip_components[1])) # cast port to integer
-    try:
-        host_ip = socket.gethostbyname( host )
-    except socket.gaierror:
-        print 'Hostname could not be resolved. Exiting.'
-        sys.exit()
-    return (host_ip, port)
-
-
-
 def main(argv):
     """ Get command line args """
     if len(argv) == 1:
@@ -91,7 +78,7 @@ def main(argv):
     print "***** Enter a command *****"
     while True:
         command = raw_input(">>>")
-        execute(command)
+        process_input(command)
 
 
 
