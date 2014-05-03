@@ -37,6 +37,7 @@ def send_command(dest_server_num, command, time):
     globes.command_sock.sendto( message, addr )
 
 
+
 def send_reply(reply, time, src_addr):
     """ Send a reply to a server with the specified server numer
         src_addr is the address of the socket who sent the command """
