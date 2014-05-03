@@ -27,13 +27,17 @@ def coordinate_command(command, time):
         # wait to receive the value from one or all replicas
         print "waiting for get values"
         value, addr = globes.reply_sock.recvfrom(4096)
-        print "received get value " + value
+        print "received value: " + value
     elif is_insert(command):
         # wait to receive success message from one or all replicas
         print "waiting for insert success"
+        success, addr = globes.reply_sock.recvfrom(4096)
+        print "received success message: " + success
     elif is_update(command):
         # wait to receive success message from one or all replicas
         print "waiting for update success"
+        success, addr = globes.reply_sock.recvfrom(4096)
+        print "received success message: " + success
 
     # delete does not require waiting. it has no consistency level.
 
