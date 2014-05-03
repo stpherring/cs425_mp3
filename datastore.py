@@ -23,3 +23,9 @@ class Datastore:
 
     def delete(self, key):
         print "deleting " + str(key)
+
+
+    def repair(self, key):
+        """ Performs a repair on the key across all replicas containing the key """
+        print "repairing " + str(key)
+        all_replicas = all_replica_nums(key)

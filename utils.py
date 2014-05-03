@@ -46,3 +46,10 @@ def create_timestamp():
 def hash(key):
     """ The hash function used to map a key to a server in the chord """
     return key % globes.total_servers
+
+
+def all_replica_nums(key):
+    """ Return a list of all the server_nums that contain a replica of this key """
+    return [ hash(key-1), hash(key), hash(key+1) ]
+
+
