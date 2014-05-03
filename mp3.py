@@ -51,19 +51,28 @@ def execute(command, timestamp, src_addr):
 
     if is_get(command):
         print "executing get on this machine"
-        send_reply("value", timestamp, src_addr)
+        key = command_parser.get_key(command)
+        value = globes.db.get(key)
+        send_reply(value, timestamp, src_addr)
 
     elif is_insert(command):
         print "executing insert on this machine"
+        key = command_parser.get_key(command)
+        value = command_parser.get_value(command)
+        globes.db.insert(key, value)
         send_reply("successfully inserted", timestamp, src_addr)
 
     elif is_update(command):
         print "executing update on this machine"
+        key = command_parser.get_key(command)
+        value = command_parser.get_value(command)
+        globes.db.update(key, value)
         send_reply("successfully updated", timestamp, src_addr)
 
     elif is_delete(command):
         print "executing delete on this machine"
-
+        key = command_parser.get_key(command)
+        globes.db.delete(key)
     else:
         return False
 
