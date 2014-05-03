@@ -3,44 +3,55 @@ import sys
 from thread import *
 import globes
 from utils import *
+from command_parser import *
 
 
 
 def process_input(command, time):
-    try:
-        success = execute(command, time)
-        if not success:
-            print "Invalid command"
-    except IndexError:
+    """ Execute a command either from the command prompt or from a message
+        Returns True if the command is valid, else False. """
+    if is_valid_command(command):
+        coordinate_command(command, time)
+    else:
         print "Invalid command"
 
 
 
-def execute(command, time):
-    """ Execute a command either from the command prompt or from a message
-        Returns True if the command is valid, else False. """
-    params = command.split(" ")
-    action = params[0]
-    key = params[1]
+def coordinate_command(command, time):
+    """ Coordinate a get call. Send request to all replicas and wait for one or all responses """
+    replicas = all_replica_nums( get_key(command) )
+    for replica_num in replicas:
+        send_command(replica_num, command, time) # send to all replicas
+    
+    if is_get(command):
+        # wait to receive the value from one or all replicas
+        print "waiting for get values"
+    elif is_insert(command):
+        # wait to receive success message from one or all replicas
+        print "waiting for insert success"
+    elif is_update(command):
+        # wait to receive success message from one or all replicas
+        print "waiting for update success"
 
-    print "key {0} hashes to {1}".format(key, hash(int(key)))
+    # delete does not require waiting. it has no consistency level.
 
-    if action == "get" and len(params) == 3:
-        level = int(params[2])
-        globes.db.get(key, level)
 
-    elif action == "insert" and len(params) == 4:
-        value = params[2]
-        level = int(params[3])
-        globes.db.insert(key, value, level)
 
-    elif action == "update" and len(params) == 4:
-        value = params[2]
-        level = int(params[3])
-        globes.db.update(key, value, level)
+def execute(command, timestamp):
+    """ Execute a command either from the command prompt or from a message.
+        This actually does the execution on this server -- not message passing and waiting """
 
-    elif action == "delete" and len(params) == 2:
-        globes.db.delete(key)
+    if is_get(command):
+        print "executing get on this machine"
+
+    elif is_insert(command):
+        print "executing insert on this machine"
+
+    elif is_update(command):
+        print "executing update on this machine"
+
+    elif is_delete(command):
+        print "executing delete on this machine"
 
     else:
         return False
@@ -53,9 +64,10 @@ def recv_thread(args):
     """ Thread that receives and executes new messages """
     while True:
         message, addr = globes.sock.recvfrom(4096)
-        success = execute(message)
+        [timestamp, command] = message.split("#")
+        success = execute(command, timestamp)
         if not success:
-            print "Error in recv: " + action + " not a valid action"
+            print "Error in recv: " + command + " not a valid command"
 
 
 
@@ -86,3 +98,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+

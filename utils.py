@@ -3,7 +3,7 @@
 import socket
 import globes
 import random
-import time
+from time import time, sleep
 
 
 def parse_addr(address):
@@ -29,17 +29,18 @@ def random_delay(dest_server_num):
 
 
 
-def send_command(dest_server_num, command):
+def send_command(dest_server_num, command, time):
     """ Send a command to a server with the specified server numer """
     random_delay( dest_server_num )
     addr = globes.get_address( dest_server_num )
-    globes.sock.sendto(command, addr)
+    message = str(time) + "#" + command
+    globes.sock.sendto( message, parse_addr(addr) )
 
 
 
 def create_timestamp():
     """ Get the current time (in floating point seconds) to be preprended to every message """
-    return time.time()
+    return time()
 
 
 
@@ -50,6 +51,6 @@ def hash(key):
 
 def all_replica_nums(key):
     """ Return a list of all the server_nums that contain a replica of this key """
+    key = int(key)
     return [ hash(key-1), hash(key), hash(key+1) ]
-
 
