@@ -21,14 +21,35 @@ def coordinate_command(command, time):
     """ Coordinate a get call. Send request to all replicas and wait for one or all responses """
     replicas = all_replica_nums( get_key(command) )
     for replica_num in replicas:
-        send_command(replica_num, command, time) # send to all replicas
+        send_command(replica_num, command, timestamp) # send to all replicas
     
     if is_get(command):
         # wait to receive the value from one or all replicas
         print "waiting for get values"
+<<<<<<< HEAD
+        level = command_parser.get_level(command)
+        if level == "1":
+            num_replies = 0
+            while num_replies < 1:
+                value, addr = globes.reply_sock.recvfrom(4096)
+                received_timestamp = get_timestamp(value)
+                if received_timestamp == timestamp:
+                    num_replies += 1
+        if level == "9":
+            num_replies = 0
+            key_timestamp = 0
+            while num_replies < globes.num_replicas:
+                content, addr = globes.reply_sock.recvfrom(4096)
+                received_timestamp, reply = split_reply(content)
+                if received_timestamp == timestamp:
+                    num_replies += 1
+                    #received_key_timestamp = 
+        print "received get value " + reply
+=======
         value, addr = globes.reply_sock.recvfrom(4096)
         print "received value: " + value
 
+>>>>>>> ab8b58c4938dbf0cd6c487bb4f7af05c755b8f90
     elif is_insert(command):
         # wait to receive success message from one or all replicas
         print "waiting for insert success"
@@ -80,7 +101,7 @@ def execute(command, timestamp, src_addr):
 
 
 
-def recv_thread(args):
+def recv_command_thread(args):
     """ Thread that receives and executes new messages """
     while True:
         message, addr = globes.command_sock.recvfrom(4096)
@@ -107,7 +128,7 @@ def main(argv):
         print "Bind failed. Error Code: " + str(msg[0]) + " Message: " + msg[1]
         sys.exit()
 
-    start_new_thread( recv_thread, ("no args",) )
+    start_new_thread( recv_command_thread, ("no args",) )
 
     print "***** Enter a command *****"
     while True:

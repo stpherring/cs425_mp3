@@ -11,17 +11,19 @@ class Datastore:
 
     def get(self, key):
         print "getting " + str(key)
-        return self.kv_store[key]
+        return self.kv_store[key][0], self.kv_store[key][1]
 
-    def insert(self, key, value):
+    def insert(self, key, value, time):
         print "inserting (" + str(key) + ", " + str(value) + ")"
-        self.kv_store[key] = value
+        value_tuple = (value, time)
+        self.kv_store[key] = value_tuple
 
 
-    def update(self, key, value):
+    def update(self, key, value, time):
         print "updating (" + str(key) + ", " + str(value) + ")"
         if key in kv_store:
-            self.kv_store[key] = value
+            value_tuple = (value, time)
+            self.kv_store[key] = value_tuple
 
     def delete(self, key):
         print "deleting " + str(key)

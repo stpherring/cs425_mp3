@@ -29,11 +29,12 @@ def random_delay(dest_server_num):
 
 
 
-def send_command(dest_server_num, command, time):
-    """ Send a command to a server with the specified server numer """
+def send_command(dest_server_num, counter, command, time):
+    """ Send a command to a server with the specified server numer 
+        Commands are of the form """
     random_delay( dest_server_num )
     addr = globes.get_command_address( dest_server_num )
-    message = str(time) + "#" + command
+    message = counter + "#" + command + "#" + str(time)
     globes.command_sock.sendto( message, addr )
 
 
@@ -44,7 +45,8 @@ def send_reply(reply, time, src_addr):
     dest_server_num = match_addr_to_server_num(src_addr)
     random_delay( dest_server_num )
     addr = globes.get_reply_address( dest_server_num )
-    globes.reply_sock.sendto( reply, addr )
+    message = str(time) + "#" + reply
+    globes.reply_sock.sendto( message, addr )
 
 
 
@@ -71,4 +73,8 @@ def match_addr_to_server_num(addr):
         if int(globes.addresses[i].split(":")[1]) == addr[1]: # if port number matches
             return i
 
+def get_timestamp(value):
+    return value.split('#')[2]
 
+def get_counter(value):
+    return value.split('#')[0]

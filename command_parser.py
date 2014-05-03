@@ -22,9 +22,9 @@ def get_level(command):
     if is_delete(command):
         return None
     elif is_get(command):
-        return command.split(" ")[2]
+        return int(command.split(" ")[2])
     elif is_insert(command) or is_update(command):
-        command.split(" ")[3]
+        return int(command.split(" ")[3])
 
 
 
