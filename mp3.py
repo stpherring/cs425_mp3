@@ -5,6 +5,7 @@ import globes
 from commands import *
 
 
+
 def process_input(command):
     try:
         success = execute(command)
