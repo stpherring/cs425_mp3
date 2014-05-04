@@ -35,7 +35,8 @@ def init(num):
 
     total_servers = len(addresses)
 
-    num_replicase = 3
+    num_replicas = 3
+    command_counter = 0
 
 
 def get_command_address(server_num):
