@@ -61,7 +61,7 @@ def coordinate_command(command, timestamp):
     replicas = all_replica_nums( get_key(command) )
     c_counter = globes.command_counter
     for replica_num in replicas:
-        send_command(replica_num, command, timestamp) # send to all replicas
+        start_new_thread( send_command, (replica_num, command, timestamp) ) # send to all replicas
     globes.command_counter += 1
 
     # GET
