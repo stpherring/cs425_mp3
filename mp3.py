@@ -15,6 +15,41 @@ def process_input(command, time):
     else:
         print "Invalid command"
 
+def get_remaining_replies(command, time, first_value, counter):
+    """ This function gets the remaining replies from a command with ONE level consistency"""
+    num_received = 0
+    if is_get(command):
+        latest_value = first_value
+        latest_timestamp = get_timestamp(first_value)
+        needsRepair = False
+        # If command is "get" then we have to do inconsistency repair
+        while num_received < globes.num_replicas - 1:
+            value, addr = globes.reply_sock.recvfrom(4096)
+            if counter == received_counter:
+                num_received += 1
+                received_timestamp = int(get_timestamp(value))
+                if received_timestamp > latest_timestamp:
+                    latest_timestamp = received_timestamp
+                    latest_value = value
+                    needsRepair = True
+            else:
+                # Send back to reply_sock (not sure how to do this)
+        if needsRepair:
+            print "Executing repair"
+            replicas = all_replica_nums( command_parser.get_key(command) )
+            for replica_num in replicas:
+                rep_command = "insert " + command_parser.get_key(command) + " " command_parser.get_value(command)
+                send_command(replica_num, , str(latest_timestamp))
+            globes.command_counter += 1
+    else:
+        while num_received < globes.num_replicas - 1:
+            value, addr = globes.reply_sock.recvfrom(4096)
+            received_counter = get_counter(value)
+            if counter == received_counter:
+                num_received += 1
+            else: 
+                # Send back to reply_sock
+
 
 
 def coordinate_command(command, time):
@@ -22,7 +57,9 @@ def coordinate_command(command, time):
     replicas = all_replica_nums( get_key(command) )
     for replica_num in replicas:
         send_command(replica_num, command, timestamp) # send to all replicas
-    
+    globes.command_counter += 1
+
+    # GET
     if is_get(command):
         # wait to receive the value from one or all replicas
         print "waiting for get values"
@@ -31,31 +68,67 @@ def coordinate_command(command, time):
             num_replies = 0
             while num_replies < 1:
                 value, addr = globes.reply_sock.recvfrom(4096)
-                received_timestamp = get_timestamp(value)
-                if received_timestamp == timestamp:
+                received_counter = get_counter(value)
+                if received_counter == globes.command_counter:
                     num_replies += 1
+                    counter = received_counter
+                    start_new_thread(get_remaining_replies, (command, time, value, received_counter))
         if level == "9":
             num_replies = 0
             key_timestamp = 0
             while num_replies < globes.num_replicas:
                 content, addr = globes.reply_sock.recvfrom(4096)
-                received_timestamp, reply = split_reply(content)
-                if received_timestamp == timestamp:
+                received_counter, reply = split_reply(content)
+                if received_counter == globes.command_counter:
                     num_replies += 1
-                    #received_key_timestamp = 
         print "received get value " + reply
-
+    
+    # INSERT
     elif is_insert(command):
         # wait to receive success message from one or all replicas
         print "waiting for insert success"
-        success, addr = globes.reply_sock.recvfrom(4096)
-        print "received success message: " + success
+        if level == "1":
+            num_replies = 0
+            while num_replies < 1:
+                value, addr = globes.reply_sock.recvfrom(4096)
+                received_counter = get_counter(value)
+                if received_counter == globes.command_counter:
+                    num_replies += 1
+                    counter = received_counter
+                    start_new_thread(get_remaining_replies, (command, time, value, received_counter))
+        if level == "9":
+            num_replies = 0
+            key_timestamp = 0
+            while num_replies < globes.num_replicas:
+                content, addr = globes.reply_sock.recvfrom(4096)
+                received_counter, reply = split_reply(content)
+
+
+        print "insert successful"        
+
         
+    # UPDATE
     elif is_update(command):
         # wait to receive success message from one or all replicas
         print "waiting for update success"
-        success, addr = globes.reply_sock.recvfrom(4096)
-        print "received success message: " + success
+
+        if level == "1":
+            num_replies = 0
+            while num_replies < 1:
+                value, addr = globes.reply_sock.recvfrom(4096)
+                received_counter = get_counter(value)
+                if received_counter == globes.command_counter:
+                    num_replies += 1
+                    counter = received_counter
+                    start_new_thread(get_remaining_replies, (command, time, value, received_counter))
+        if level == "9":
+            num_replies = 0
+            key_timestamp = 0
+            while num_replies < globes.num_replicas:
+                content, addr = globes.reply_sock.recvfrom(4096)
+                received_counter, reply = split_reply(content)
+
+        print "update successful"
 
     # delete does not require waiting. it has no consistency level.
 

@@ -29,12 +29,12 @@ def random_delay(dest_server_num):
 
 
 
-def send_command(dest_server_num, counter, command, time):
+def send_command(dest_server_num, command, time):
     """ Send a command to a server with the specified server numer 
         Commands are of the form """
     random_delay( dest_server_num )
     addr = globes.get_command_address( dest_server_num )
-    message = counter + "#" + command + "#" + str(time)
+    message = globes.command_counter + "#" + command + "#" + str(time)
     globes.command_sock.sendto( message, addr )
 
 
@@ -77,4 +77,4 @@ def get_timestamp(value):
     return value.split('#')[2]
 
 def get_counter(value):
-    return value.split('#')[0]
+    return int(value.split('#')[0])
