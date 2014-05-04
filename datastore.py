@@ -11,7 +11,10 @@ class Datastore:
 
     def get(self, key):
         print "getting " + str(key)
-        return self.kv_store[key][0], self.kv_store[key][1]
+        if key in self.kv_store:
+            return self.kv_store[key][0], self.kv_store[key][1]
+        else:
+            return None
 
     def insert(self, key, value, time):
         print "inserting (" + str(key) + ", " + str(value) + ")"
