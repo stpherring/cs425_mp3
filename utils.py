@@ -61,10 +61,12 @@ def hash(key):
     return key % globes.total_servers
 
 
+
 def all_replica_nums(key):
     """ Return a list of all the server_nums that contain a replica of this key """
     key = int(key)
     return [ hash(key-1), hash(key), hash(key+1) ]
+
 
 
 def match_addr_to_server_num(addr):
@@ -73,8 +75,13 @@ def match_addr_to_server_num(addr):
         if int(globes.addresses[i].split(":")[1]) == addr[1]: # if port number matches
             return i
 
+
+
 def get_timestamp(value):
     return value.split('#')[2]
 
+
 def get_counter(value):
     return int(value.split('#')[0])
+
+    

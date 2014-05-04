@@ -19,6 +19,7 @@ def init(num):
     global addresses        # addresses[i] returns the 'localhost:1500#' of server i
     global num_replicas     # number of replicas for each key
     global command_counter  # counter for the number of commands send
+
     server_num = num
 
     command_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

@@ -6,7 +6,6 @@ from utils import *
 from command_parser import *
 
 
-
 def process_input(command, time):
     """ Execute a command either from the command prompt or from a message
         Returns True if the command is valid, else False. """
@@ -14,6 +13,8 @@ def process_input(command, time):
         coordinate_command(command, time)
     else:
         print "Invalid command"
+
+
 
 def get_remaining_replies(command, time, first_value, counter):
     """ This function gets the remaining replies from a command with ONE level consistency"""
