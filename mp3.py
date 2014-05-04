@@ -35,7 +35,8 @@ def get_remaining_replies(command, time, first_value, counter):
                     latest_value = value
                     needsRepair = True
             else:
-                print "TODO send back to reply_sock"
+                print "Resending"
+                send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
                 # Send back to reply_sock (not sure how to do this)
         if needsRepair:
             print "Executing repair"
@@ -51,8 +52,10 @@ def get_remaining_replies(command, time, first_value, counter):
             if counter == received_counter:
                 num_received += 1
             else:
-                print "TODO send back to reply_sock"
-                # Send back to reply_sock
+                print "Resending" 
+                send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+
+                
 
 
 
@@ -78,6 +81,10 @@ def coordinate_command(command, timestamp):
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
+                else:
+                    print "Resending"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+
         if level == 9:
             num_replies = 0
             latest_value = None
@@ -98,6 +105,10 @@ def coordinate_command(command, timestamp):
                         latest_value = value
                         needsRepair = True
                     num_replies += 1
+                else:
+                    print "Resending"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+
             if needsRepair:
                 print "Executing repair"
                 replicas = all_replica_nums( get_key(command) )
@@ -122,6 +133,10 @@ def coordinate_command(command, timestamp):
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
+                else:
+                    print "Resending"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+
         if level == 9:
             num_replies = 0
             while num_replies < globes.num_replicas:
@@ -129,6 +144,10 @@ def coordinate_command(command, timestamp):
                 received_counter = get_counter(content)
                 if received_counter == c_counter:
                     num_replies += 1
+                else:
+                    print "Resending"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+ 
 
         print "insert successful"        
 
@@ -147,6 +166,9 @@ def coordinate_command(command, timestamp):
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
+                else:
+                    print "Resending"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
         if level == 9:
             num_replies = 0
             while num_replies < globes.num_replicas:
@@ -154,7 +176,9 @@ def coordinate_command(command, timestamp):
                 received_counter = get_counter(content)
                 if received_counter == c_counter:
                     num_replies += 1
-
+                else:
+                    print "Resending"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
         print "update successful"
 
     # delete does not require waiting. it has no consistency level.

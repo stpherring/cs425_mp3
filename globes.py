@@ -5,7 +5,6 @@ import json
 from datastore import Datastore
 from utils import parse_addr
 
-port_offset = 100
 
 def init(num):
     """ Initialization function. Must be explicitly called: globes.init(n) """
@@ -19,6 +18,7 @@ def init(num):
     global addresses        # addresses[i] returns the 'localhost:1500#' of server i
     global num_replicas     # number of replicas for each key
     global command_counter  # counter for the number of commands send
+    global port_offset      # offset between a server's command port and reply port
 
     server_num = num
 
@@ -37,6 +37,7 @@ def init(num):
 
     num_replicas = 3
     command_counter = 0
+    port_offset = 100
 
 
 def get_command_address(server_num):
