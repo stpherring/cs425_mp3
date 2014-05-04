@@ -39,10 +39,9 @@ def send_command(dest_server_num, command, time):
 
 
 
-def send_reply(reply, counter, time, src_addr):
-    """ Send a reply to a server with the specified server numer
-        src_addr is the address of the socket who sent the command """
-    dest_server_num = match_addr_to_server_num(src_addr)
+def send_reply(reply, counter, time, dest_addr):
+    """ Send a reply message to dest_addr """
+    dest_server_num = match_addr_to_server_num(dest_addr)
     random_delay( dest_server_num )
     addr = globes.get_reply_address( dest_server_num )
     message = str(counter) + "#" + reply + "#" + str(time)
@@ -72,7 +71,8 @@ def all_replica_nums(key):
 def match_addr_to_server_num(addr):
     """ Given an address tuple, return the server_num that has that socket """
     for i in range(len(globes.addresses)):
-        if int(globes.addresses[i].split(":")[1]) == addr[1]: # if port number matches
+        address = int(globes.addresses[i].split(":")[1])
+        if address == addr[1] or address == addr[1]-globes.port_offset or address == addr[1]+globes.port_offset: # if port number matches
             return i
 
 
