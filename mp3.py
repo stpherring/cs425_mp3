@@ -150,6 +150,7 @@ def execute(command, timestamp, src_addr):
         if value:
             send_reply(value, timestamp, src_addr)
         else:
+            send_reply("not found", timestamp, src_addr)
             return False  # key is not in the datastore
 
     elif is_insert(command):

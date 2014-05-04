@@ -82,6 +82,8 @@ def get_timestamp(value):
 
 
 def get_counter(value):
+    print """ERROR Stephen, your reply messages do not have a counter in them.
+        See here, you call get_counter() with parameter """, value
     return int(value.split('#')[0])
 
 
