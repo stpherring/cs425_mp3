@@ -15,7 +15,7 @@ def get_value(command):
     if is_get(command) or is_delete(command):
         return None
     elif is_insert(command) or is_update(command):
-        command.split(" ")[2]
+        return command.split(" ")[2]
 
 def get_level(command):
     """ Extract the 'value' from a command """

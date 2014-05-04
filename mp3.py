@@ -21,14 +21,15 @@ def get_remaining_replies(command, time, first_value, counter):
     num_received = 0
     if is_get(command):
         latest_value = first_value
-        latest_timestamp = get_timestamp(first_value)
+        latest_timestamp = float(get_timestamp(first_value))
         needsRepair = False
         # If command is "get" then we have to do inconsistency repair
         while num_received < globes.num_replicas - 1:
             value, addr = globes.reply_sock.recvfrom(4096)
+            received_counter = get_counter(value)
             if counter == received_counter:
                 num_received += 1
-                received_timestamp = int(get_timestamp(value))
+                received_timestamp = float(get_timestamp(value))
                 if received_timestamp > latest_timestamp:
                     latest_timestamp = received_timestamp
                     latest_value = value
@@ -40,7 +41,6 @@ def get_remaining_replies(command, time, first_value, counter):
             print "Executing repair"
             replicas = all_replica_nums( get_key(command) )
             for replica_num in replicas:
-                print "needs repair"
                 rep_command = "insert " + get_key(command) + " " + get_value(command)
                 send_command(replica_num, rep_command, str(latest_timestamp))
             globes.command_counter += 1
@@ -59,6 +59,7 @@ def get_remaining_replies(command, time, first_value, counter):
 def coordinate_command(command, timestamp):
     """ Coordinate a get call. Send request to all replicas and wait for one or all responses """
     replicas = all_replica_nums( get_key(command) )
+    c_counter = globes.command_counter
     for replica_num in replicas:
         send_command(replica_num, command, timestamp) # send to all replicas
     globes.command_counter += 1
@@ -73,18 +74,38 @@ def coordinate_command(command, timestamp):
             while num_replies < 1:
                 value, addr = globes.reply_sock.recvfrom(4096)
                 received_counter = get_counter(value)
-                if received_counter == globes.command_counter:
+                if received_counter == c_counter:
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
         if level == 9:
             num_replies = 0
-            key_timestamp = 0
+            latest_value = None
+            latest_timestamp = None
+            needsRepair = False
+
             while num_replies < globes.num_replicas:
                 content, addr = globes.reply_sock.recvfrom(4096)
-                received_counter, reply = split_reply(content)
-                if received_counter == globes.command_counter:
+                received_counter = get_counter(content)
+                reply = get_command(content)
+                if received_counter == c_counter:
+                    received_timestamp = float(get_timestamp(content))
+                    if latest_timestamp is None:
+                        latest_timesamp = received_timestamp
+                        latest_value = get_value(command)
+                    elif received_timestamp > latest_timestamp:
+                        latest_timestamp = received_timestamp
+                        latest_value = value
+                        needsRepair = True
                     num_replies += 1
+            if needsRepair:
+                print "Executing repair"
+                replicas = all_replica_nums( get_key(command) )
+                for replica_num in replicas:
+                    rep_command = "insert " + get_key(command) + " " + get_value(command)
+                    send_command(replica_num, rep_command, str(latest_timestamp))
+                globes.command_counter += 1
+
         print "received get value"
     
     # INSERT
@@ -97,17 +118,17 @@ def coordinate_command(command, timestamp):
             while num_replies < 1:
                 value, addr = globes.reply_sock.recvfrom(4096)
                 received_counter = get_counter(value)
-                if received_counter == globes.command_counter:
+                if received_counter == c_counter:
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
         if level == 9:
             num_replies = 0
-            key_timestamp = 0
             while num_replies < globes.num_replicas:
                 content, addr = globes.reply_sock.recvfrom(4096)
-                received_counter, reply = split_reply(content)
-
+                received_counter = get_counter(content)
+                if received_counter == c_counter:
+                    num_replies += 1
 
         print "insert successful"        
 
@@ -122,16 +143,17 @@ def coordinate_command(command, timestamp):
             while num_replies < 1:
                 value, addr = globes.reply_sock.recvfrom(4096)
                 received_counter = get_counter(value)
-                if received_counter == globes.command_counter:
+                if received_counter == c_counter:
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
         if level == 9:
             num_replies = 0
-            key_timestamp = 0
             while num_replies < globes.num_replicas:
                 content, addr = globes.reply_sock.recvfrom(4096)
-                received_counter, reply = split_reply(content)
+                received_counter = get_counter(content)
+                if received_counter == c_counter:
+                    num_replies += 1
 
         print "update successful"
 
@@ -139,18 +161,18 @@ def coordinate_command(command, timestamp):
 
 
 
-def execute(command, timestamp, src_addr):
+def execute(command, timestamp, src_addr, counter):
     """ Execute a command either from the command prompt or from a message.
         This actually does the execution on this server -- not message passing and waiting """
 
     if is_get(command):
         print "executing get on this machine"
         key = get_key(command)
-        value = globes.db.get(key)
+        value, get_time = globes.db.get(key)
         if value:
-            send_reply(value, timestamp, src_addr)
+            send_reply(value, counter, timestamp, src_addr)
         else:
-            send_reply("not found", timestamp, src_addr)
+            send_reply("not found", counter, timestamp, src_addr)
             return False  # key is not in the datastore
 
     elif is_insert(command):
@@ -158,14 +180,14 @@ def execute(command, timestamp, src_addr):
         key = get_key(command)
         value = get_value(command)
         globes.db.insert(key, value, timestamp)
-        send_reply("successfully inserted", timestamp, src_addr)
+        send_reply("successfully inserted", counter, timestamp, src_addr)
 
     elif is_update(command):
         print "executing update on this machine"
         key = get_key(command)
         value = get_value(command)
         globes.db.update(key, value, timestamp)
-        send_reply("successfully updated", timestamp, src_addr)
+        send_reply("successfully updated", counter, timestamp, src_addr)
 
     elif is_delete(command):
         print "executing delete on this machine"
@@ -185,7 +207,7 @@ def recv_command_thread(args):
         message, addr = globes.command_sock.recvfrom(4096)
         print "recv'd: ", message
         [cmd_counter, command, timestamp] = message.split("#")
-        success = execute(command, timestamp, addr)
+        success = execute(command, timestamp, addr, cmd_counter)
         if not success:
             if is_get(command):
                 print "Error " + get_key(command) + " is not in the datastore"

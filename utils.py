@@ -39,13 +39,13 @@ def send_command(dest_server_num, command, time):
 
 
 
-def send_reply(reply, time, src_addr):
+def send_reply(reply, counter, time, src_addr):
     """ Send a reply to a server with the specified server numer
         src_addr is the address of the socket who sent the command """
     dest_server_num = match_addr_to_server_num(src_addr)
     random_delay( dest_server_num )
     addr = globes.get_reply_address( dest_server_num )
-    message = str(time) + "#" + reply
+    message = str(counter) + "#" + reply + "#" + str(time)
     globes.reply_sock.sendto( message, addr )
 
 
@@ -82,8 +82,7 @@ def get_timestamp(value):
 
 
 def get_counter(value):
-    print """ERROR Stephen, your reply messages do not have a counter in them.
-        See here, you call get_counter() with parameter """, value
     return int(value.split('#')[0])
 
-
+def get_command(value):
+    return value.split('#')[1]

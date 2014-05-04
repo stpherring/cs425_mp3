@@ -14,7 +14,7 @@ class Datastore:
         if key in self.kv_store:
             return self.kv_store[key][0], self.kv_store[key][1]
         else:
-            return None
+            return None, None
 
     def insert(self, key, value, time):
         print "inserting (" + str(key) + ", " + str(value) + ")"
@@ -24,9 +24,11 @@ class Datastore:
 
     def update(self, key, value, time):
         print "updating (" + str(key) + ", " + str(value) + ")"
-        if key in kv_store:
+        if key in self.kv_store:
             value_tuple = (value, time)
             self.kv_store[key] = value_tuple
+        else:
+            print "key not found"
 
     def delete(self, key):
         print "deleting " + str(key)
