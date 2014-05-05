@@ -183,9 +183,11 @@ def coordinate_command(command, timestamp):
             content, addr = globes.reply_sock.recvfrom(4096)
             received_counter = get_counter(content)
             if received_counter == c_counter:
+                reply = get_command(content)
+                print "Received " + reply + " from " + str(match_addr_to_server_num(addr))
                 num_replies += 1
             else:
-                send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
+                send_reply(get_command(content), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
 
 
