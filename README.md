@@ -59,7 +59,9 @@ timestamp (an attribute of the value) of each returned value. If they do not all
 Finally, the coordinator will send an update message to every server to update their value
 to the chosen value.
 
-
-
+The datastore is implemented as a simple key-value store.
+key => (value, timestamp)
+The datastore is a Python-defined class with a dictionary attribute and all the 
+appropriate functionalities:  get, insert, update, delete, show-all
 
 

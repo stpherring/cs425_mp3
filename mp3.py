@@ -267,7 +267,7 @@ def main(argv):
 
     print "***** Enter a command *****"
     while True:
-        command = raw_input(">>>")
+        command = raw_input(">>> ")
         time = create_timestamp()
         process_input(command, time)
 

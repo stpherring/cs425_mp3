@@ -33,9 +33,6 @@ def init(num):
     delays = data['avg_delays'][server_num] # delays is a list of avg delay times
     addresses = data['addresses']
 
-    for d in delays:
-        print "delay", d
-
     total_servers = len(addresses)
 
     num_replicas = 3
