@@ -33,6 +33,9 @@ def init(num):
     delays = data['avg_delays'][server_num] # delays is a list of avg delay times
     addresses = data['addresses']
 
+    for d in delays:
+        print "delay", d
+
     total_servers = len(addresses)
 
     num_replicas = 3
@@ -64,6 +67,6 @@ def get_my_reply_address():
 
 def get_avg_delay(dest_server_num):
     """ Getter returns the average delay time for a send to server_num """
-    return delays[server_num]
+    return delays[dest_server_num]
 
 

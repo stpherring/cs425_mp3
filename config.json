@@ -1,15 +1,15 @@
 {
 
-    "_comments" : "avg_delays[x][i] returns a the average delay time from server x to server i",
+    "_comments" : "avg_delays[x][i] returns a the average delay time (seconds) from server x to server i",
     
     "addresses" : [ "localhost:15000",
                     "localhost:15001",
                     "localhost:15002",
                     "localhost:15003" ],
 
-    "avg_delays": [ [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0] ]
+    "avg_delays": [ [0, 10, 0, 0],
+                    [10, 0, 10, 10],
+                    [0, 10, 0, 0],
+                    [0, 10, 0, 0] ]
 
 }
