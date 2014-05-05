@@ -40,5 +40,7 @@ class Datastore:
         print "repairing " + str(key)
         all_replicas = all_replica_nums(key)
 
-    def show_all():
+
+    def show_all(self):
+        """ Print out every pair in the key-value store """
         print self.kv_store

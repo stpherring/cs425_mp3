@@ -29,18 +29,18 @@ def random_delay(dest_server_num):
 
 
 
-def send_command(dest_server_num, command, time):
+def send_command(dest_server_num, command, time, command_counter):
     """ Send a command to a server with the specified server numer 
         Commands are of the form """
     random_delay( dest_server_num )
     addr = globes.get_command_address( dest_server_num )
-    message = str(globes.command_counter) + "#" + command + "#" + str(time)
+    message = str(command_counter) + "#" + command + "#" + str(time)
     globes.command_sock.sendto( message, addr )
 
 
 
 def send_reply(reply, counter, time, dest_addr):
-    """ Send a reply message to dest_addr """
+    """ Send a reply message to dest_addr. dest_addr is a tuple of the form (ip, port) """
     dest_server_num = match_addr_to_server_num(dest_addr)
     random_delay( dest_server_num )
     addr = globes.get_reply_address( dest_server_num )
@@ -67,12 +67,18 @@ def all_replica_nums(key):
     return [ hash(key-1), hash(key), hash(key+1) ]
 
 
+def all_server_nums():
+    """ Return a list of all the server_nums, with no regard to a key or hash """
+    return [i for i in range(globes.total_servers)]
+
 
 def match_addr_to_server_num(addr):
     """ Given an address tuple, return the server_num that has that socket """
+    target_port = addr[1]
+    offset = globes.port_offset
     for i in range(len(globes.addresses)):
-        address = int(globes.addresses[i].split(":")[1])
-        if address == addr[1] or address == addr[1]-globes.port_offset or address == addr[1]+globes.port_offset: # if port number matches
+        curr_port = int(globes.addresses[i].split(":")[1])
+        if curr_port == target_port or curr_port == target_port-offset or curr_port == target_port+offset:
             return i
 
 

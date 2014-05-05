@@ -30,7 +30,7 @@ def get_level(command):
 
 def is_valid_command(command):
     """ Given a command, return True if it is valid, else False """
-    return is_get(command) or is_insert(command) or is_update(command) or is_delete(command)
+    return is_get(command) or is_insert(command) or is_update(command) or is_delete(command) or is_showall(command) or is_search(command)
 
 """ Helper functions to determine what type of command it is """
 def is_get(command):
@@ -45,3 +45,11 @@ def is_update(command):
 def is_delete(command):
     params = command.split(" ")
     return params[0] == "delete" and len(params) == 2
+def is_showall(command):
+    return command == "show-all"
+def is_search(command):
+    params = command.split(" ")
+    return params[0] == "search" and len(params) == 2
+
+
+    

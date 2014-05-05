@@ -35,15 +35,15 @@ def get_remaining_replies(command, time, first_value, counter):
                     latest_value = value
                     needsRepair = True
             else:
-                print "Resending"
-                send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                print "Resending1"
+                send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
                 # Send back to reply_sock (not sure how to do this)
         if needsRepair:
             print "Executing repair"
             replicas = all_replica_nums( get_key(command) )
             for replica_num in replicas:
                 rep_command = "insert " + get_key(command) + " " + get_value(command)
-                send_command(replica_num, rep_command, str(latest_timestamp))
+                send_command(replica_num, rep_command, str(latest_timestamp), globes.command_counter)
             globes.command_counter += 1
     else:
         while num_received < globes.num_replicas - 1:
@@ -52,8 +52,8 @@ def get_remaining_replies(command, time, first_value, counter):
             if counter == received_counter:
                 num_received += 1
             else:
-                print "Resending" 
-                send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                print "Resending2" 
+                send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
                 
 
@@ -61,10 +61,13 @@ def get_remaining_replies(command, time, first_value, counter):
 
 def coordinate_command(command, timestamp):
     """ Coordinate a get call. Send request to all replicas and wait for one or all responses """
-    replicas = all_replica_nums( get_key(command) )
+    if is_showall(command):
+        replicas = all_server_nums()
+    else:
+        replicas = all_replica_nums( get_key(command) )
     c_counter = globes.command_counter
     for replica_num in replicas:
-        start_new_thread( send_command, (replica_num, command, timestamp) ) # send to all replicas
+        start_new_thread( send_command, (replica_num, command, timestamp, globes.command_counter) ) # send to all replicas
     globes.command_counter += 1
 
     # GET
@@ -77,13 +80,14 @@ def coordinate_command(command, timestamp):
             while num_replies < 1:
                 value, addr = globes.reply_sock.recvfrom(4096)
                 received_counter = get_counter(value)
+                print received_counter, c_counter
                 if received_counter == c_counter:
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
                 else:
-                    print "Resending"
-                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                    print "Resending3"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
         if level == 9:
             num_replies = 0
@@ -106,15 +110,15 @@ def coordinate_command(command, timestamp):
                         needsRepair = True
                     num_replies += 1
                 else:
-                    print "Resending"
-                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                    print "Resending4"
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
             if needsRepair:
                 print "Executing repair"
                 replicas = all_replica_nums( get_key(command) )
                 for replica_num in replicas:
                     rep_command = "insert " + get_key(command) + " " + get_value(command)
-                    send_command(replica_num, rep_command, str(latest_timestamp))
+                    send_command(replica_num, rep_command, str(latest_timestamp), globes.command_counter)
                 globes.command_counter += 1
 
         print "received get value"
@@ -135,7 +139,7 @@ def coordinate_command(command, timestamp):
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
                 else:
                     print "Resending"
-                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
         if level == 9:
             num_replies = 0
@@ -146,7 +150,7 @@ def coordinate_command(command, timestamp):
                     num_replies += 1
                 else:
                     print "Resending"
-                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
  
 
         print "insert successful"        
@@ -168,7 +172,7 @@ def coordinate_command(command, timestamp):
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
                 else:
                     print "Resending"
-                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
         if level == 9:
             num_replies = 0
             while num_replies < globes.num_replicas:
@@ -178,17 +182,21 @@ def coordinate_command(command, timestamp):
                     num_replies += 1
                 else:
                     print "Resending"
-                    send_reply(get_command(value), get_counter(value), get_timestamp(value), str(globes.get_my_reply_address()[0]) + ":" + str(globes.get_my_reply_address()[1]))
+                    send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
         print "update successful"
 
     # delete does not require waiting. it has no consistency level.
 
+    elif is_showall(command):
+        print "show all"
+
+    elif is_search(command):
+        print "search"
 
 
 def execute(command, timestamp, src_addr, counter):
     """ Execute a command either from the command prompt or from a message.
         This actually does the execution on this server -- not message passing and waiting """
-
     if is_get(command):
         print "executing get on this machine"
         key = get_key(command)
@@ -217,6 +225,13 @@ def execute(command, timestamp, src_addr, counter):
         print "executing delete on this machine"
         key = get_key(command)
         globes.db.delete(key)
+
+    elif is_showall(command):
+        print "executing show-all on this machine"
+        globes.db.show_all()
+
+    elif is_search(command):
+        print "executing search on this machine"
 
     else:
         return False
