@@ -1,5 +1,6 @@
 from utils import *
 from command_parser import *
+import globes
 
 def search(key):
     """ This should not be a separate file. It is right now to avoid merging """
