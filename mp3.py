@@ -35,7 +35,6 @@ def get_remaining_replies(command, time, first_value, counter):
                     latest_value = value
                     needsRepair = True
             else:
-                print "Resending1"
                 send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
                 # Send back to reply_sock (not sure how to do this)
         if needsRepair:
@@ -52,17 +51,15 @@ def get_remaining_replies(command, time, first_value, counter):
             if counter == received_counter:
                 num_received += 1
             else:
-                print "Resending2" 
                 send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
-
-                
 
 
 
 def coordinate_command(command, timestamp):
     """ Coordinate a get call. Send request to all replicas and wait for one or all responses """
     if is_showall(command):
-        replicas = all_server_nums()
+        globes.db.show_all()
+        return  # show-all is done locally
     else:
         replicas = all_replica_nums( get_key(command) )
     c_counter = globes.command_counter
@@ -73,20 +70,17 @@ def coordinate_command(command, timestamp):
     # GET
     if is_get(command):
         # wait to receive the value from one or all replicas
-        print "waiting for get values"
         level = get_level(command)
         if level == 1:
             num_replies = 0
             while num_replies < 1:
                 value, addr = globes.reply_sock.recvfrom(4096)
                 received_counter = get_counter(value)
-                print received_counter, c_counter
                 if received_counter == c_counter:
                     num_replies += 1
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
                 else:
-                    print "Resending3"
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
         if level == 9:
@@ -98,7 +92,6 @@ def coordinate_command(command, timestamp):
             while num_replies < globes.num_replicas:
                 content, addr = globes.reply_sock.recvfrom(4096)
                 received_counter = get_counter(content)
-                reply = get_command(content)
                 if received_counter == c_counter:
                     received_timestamp = float(get_timestamp(content))
                     if latest_timestamp is None:
@@ -110,7 +103,6 @@ def coordinate_command(command, timestamp):
                         needsRepair = True
                     num_replies += 1
                 else:
-                    print "Resending4"
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
             if needsRepair:
@@ -126,7 +118,6 @@ def coordinate_command(command, timestamp):
     # INSERT
     elif is_insert(command):
         # wait to receive success message from one or all replicas
-        print "waiting for insert success"
         level = get_level(command)
         if level == 1:
             num_replies = 0
@@ -138,20 +129,17 @@ def coordinate_command(command, timestamp):
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
                 else:
-                    print "Resending"
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
         if level == 9:
             num_replies = 0
             while num_replies < globes.num_replicas:
-                content, addr = globes.reply_sock.recvfrom(4096)
-                received_counter = get_counter(content)
+                value, addr = globes.reply_sock.recvfrom(4096)
+                received_counter = get_counter(value)
                 if received_counter == c_counter:
                     num_replies += 1
                 else:
-                    print "Resending"
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
- 
 
         print "insert successful"        
 
@@ -159,7 +147,6 @@ def coordinate_command(command, timestamp):
     # UPDATE
     elif is_update(command):
         # wait to receive success message from one or all replicas
-        print "waiting for update success"
         level = get_level(command)
         if level == 1:
             num_replies = 0
@@ -171,7 +158,6 @@ def coordinate_command(command, timestamp):
                     counter = received_counter
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
                 else:
-                    print "Resending"
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
         if level == 9:
             num_replies = 0
@@ -181,24 +167,29 @@ def coordinate_command(command, timestamp):
                 if received_counter == c_counter:
                     num_replies += 1
                 else:
-                    print "Resending"
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
+
         print "update successful"
 
     # delete does not require waiting. it has no consistency level.
-
-    elif is_showall(command):
-        print "show all"
+    # show-all is only done locally so no message coordination is required
 
     elif is_search(command):
-        print "search"
+        num_replies = 0
+        while num_replies < globes.num_replicas:
+            content, addr = globes.reply_sock.recvfrom(4096)
+            received_counter = get_counter(content)
+            if received_counter == c_counter:
+                num_replies += 1
+            else:
+                send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
+
 
 
 def execute(command, timestamp, src_addr, counter):
     """ Execute a command either from the command prompt or from a message.
         This actually does the execution on this server -- not message passing and waiting """
     if is_get(command):
-        print "executing get on this machine"
         key = get_key(command)
         value, get_time = globes.db.get(key)
         if value:
@@ -208,30 +199,32 @@ def execute(command, timestamp, src_addr, counter):
             return False  # key is not in the datastore
 
     elif is_insert(command):
-        print "executing insert on this machine"
         key = get_key(command)
         value = get_value(command)
         globes.db.insert(key, value, timestamp)
         send_reply("successfully inserted", counter, timestamp, src_addr)
 
     elif is_update(command):
-        print "executing update on this machine"
         key = get_key(command)
         value = get_value(command)
         globes.db.update(key, value, timestamp)
         send_reply("successfully updated", counter, timestamp, src_addr)
 
     elif is_delete(command):
-        print "executing delete on this machine"
         key = get_key(command)
         globes.db.delete(key)
 
-    elif is_showall(command):
-        print "executing show-all on this machine"
-        globes.db.show_all()
+    # show-all is implemented in the first three lines of coordinate_command()
 
     elif is_search(command):
-        print "executing search on this machine"
+        key = get_key(command)
+        value, get_time = globes.db.get(key)
+        if value:
+            send_reply(value, counter, timestamp, src_addr)
+        else:
+            send_reply("not found", counter, timestamp, src_addr)
+            return False  # key is not in the datastore
+
 
     else:
         return False
@@ -244,7 +237,6 @@ def recv_command_thread(args):
     """ Thread that receives and executes new messages """
     while True:
         message, addr = globes.command_sock.recvfrom(4096)
-        print "recv'd: ", message
         [cmd_counter, command, timestamp] = message.split("#")
         success = execute(command, timestamp, addr, cmd_counter)
         if not success:
