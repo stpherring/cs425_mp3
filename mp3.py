@@ -97,10 +97,10 @@ def coordinate_command(command, timestamp):
                     received_timestamp = float(get_timestamp(content))
                     if latest_timestamp is None:
                         latest_timesamp = received_timestamp
-                        latest_value = get_value(content)
+                        latest_value = get_command(content)
                     elif received_timestamp > latest_timestamp:
                         latest_timestamp = received_timestamp
-                        latest_value = get_value(content)
+                        latest_value = get_command(content)
                         needsRepair = True
                     num_replies += 1
                 else:
