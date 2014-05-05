@@ -53,7 +53,11 @@ Each server has a background thread listening for incoming commands on command_s
 Each server accepts user input from the terminal
 
 Our system implements read-repair in order to maintain eventual consistency.
-
+When a get command is executed, a command message is sent to every server containing the key.
+After all servers have returned their value, the coordinator server will compare the
+timestamp (an attribute of the value) of each returned value. If they do not all share the same timestamp, then the coordinator will choose the one with the latest timestamp.
+Finally, the coordinator will send an update message to every server to update their value
+to the chosen value.
 
 
 
