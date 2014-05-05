@@ -38,4 +38,6 @@ class Datastore:
 
     def show_all(self):
         """ Print out every pair in the key-value store """
-        print self.kv_store
+        print "key => value"
+        for key, value in self.kv_store.iteritems():
+            print key, "=>", value[0]
