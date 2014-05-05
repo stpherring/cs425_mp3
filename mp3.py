@@ -79,6 +79,7 @@ def coordinate_command(command, timestamp):
                 if received_counter == c_counter:
                     num_replies += 1
                     counter = received_counter
+                    print "Get return: " + get_command(value)
                     start_new_thread(get_remaining_replies, (command, timestamp, value, received_counter))
                 else:
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
@@ -96,14 +97,16 @@ def coordinate_command(command, timestamp):
                     received_timestamp = float(get_timestamp(content))
                     if latest_timestamp is None:
                         latest_timesamp = received_timestamp
-                        latest_value = get_value(command)
+                        latest_value = get_value(content)
                     elif received_timestamp > latest_timestamp:
                         latest_timestamp = received_timestamp
-                        latest_value = value
+                        latest_value = get_value(content)
                         needsRepair = True
                     num_replies += 1
                 else:
-                    send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
+                    send_reply(get_command(content), get_counter(content), get_timestamp(content), globes.get_my_reply_address() )
+
+            print "Get return: " + latest_value
 
             if needsRepair:
                 print "Executing repair"
