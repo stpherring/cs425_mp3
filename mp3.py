@@ -115,8 +115,6 @@ def coordinate_command(command, timestamp):
                     rep_command = "insert " + get_key(command) + " " + get_value(command)
                     send_command(replica_num, rep_command, str(latest_timestamp), globes.command_counter)
                 globes.command_counter += 1
-
-        print "received get value"
     
     # INSERT
     elif is_insert(command):
@@ -144,7 +142,7 @@ def coordinate_command(command, timestamp):
                 else:
                     send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
 
-        print "insert successful"        
+        print "insert successful"
 
         
     # UPDATE
@@ -184,7 +182,7 @@ def coordinate_command(command, timestamp):
             received_counter = get_counter(content)
             if received_counter == c_counter:
                 reply = get_command(content)
-                print "Received " + reply + " from server number " + str(match_addr_to_server_num(addr))
+                print "Server #" + str(match_addr_to_server_num(addr)) + " returned value:  " + reply
                 num_replies += 1
             else:
                 send_reply(get_command(content), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
@@ -244,11 +242,8 @@ def recv_command_thread(args):
         message, addr = globes.command_sock.recvfrom(4096)
         [cmd_counter, command, timestamp] = message.split("#")
         success = execute(command, timestamp, addr, cmd_counter)
-        if not success:
-            if is_get(command) or is_search(command):
-                print "Error " + get_key(command) + " is not in the datastore"
-            else:
-                print "Error in recv: " + command + " not a valid command"
+        if not success and not is_get(command) and not is_search(command):
+            print "Error in recv: " + command + " not a valid command"
 
 
 
