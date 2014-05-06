@@ -30,18 +30,20 @@ def get_remaining_replies(command, time, first_value, counter):
             if counter == received_counter:
                 num_received += 1
                 received_timestamp = float(get_timestamp(value))
+
                 if received_timestamp > latest_timestamp:
                     latest_timestamp = received_timestamp
-                    latest_value = value
+                    latest_value = get_command(value)
+                    needsRepair = True
+                elif received_timestamp < latest_timestamp:
                     needsRepair = True
             else:
                 send_reply(get_command(value), get_counter(value), get_timestamp(value), globes.get_my_reply_address() )
                 # Send back to reply_sock (not sure how to do this)
         if needsRepair:
-            print "Executing repair"
             replicas = all_replica_nums( get_key(command) )
             for replica_num in replicas:
-                rep_command = "insert " + get_key(command) + " " + get_value(command)
+                rep_command = "insert " + get_key(command) + " " + latest_value + " 9"
                 send_command(replica_num, rep_command, str(latest_timestamp), globes.command_counter)
             globes.command_counter += 1
     else:
@@ -87,7 +89,7 @@ def coordinate_command(command, timestamp):
         if level == 9:
             num_replies = 0
             latest_value = None
-            latest_timestamp = None
+            latest_timestamp = 0 
             needsRepair = False
 
             while num_replies < globes.num_replicas:
@@ -95,26 +97,29 @@ def coordinate_command(command, timestamp):
                 received_counter = get_counter(content)
                 if received_counter == c_counter:
                     received_timestamp = float(get_timestamp(content))
-                    if latest_timestamp is None:
-                        latest_timesamp = received_timestamp
+
+                    if latest_timestamp == 0:
+                        latest_timestamp = received_timestamp
                         latest_value = get_command(content)
                     elif received_timestamp > latest_timestamp:
                         latest_timestamp = received_timestamp
                         latest_value = get_command(content)
                         needsRepair = True
+                    elif received_timestamp < latest_timestamp:
+                        needsRepair = True
                     num_replies += 1
                 else:
                     send_reply(get_command(content), get_counter(content), get_timestamp(content), globes.get_my_reply_address() )
 
-            print "Get return: " + latest_value
-
             if needsRepair:
-                print "Executing repair"
                 replicas = all_replica_nums( get_key(command) )
                 for replica_num in replicas:
-                    rep_command = "insert " + get_key(command) + " " + get_value(command)
+                    rep_command = "insert " + get_key(command) + " " + latest_value + " 9"
                     send_command(replica_num, rep_command, str(latest_timestamp), globes.command_counter)
                 globes.command_counter += 1
+            
+            print "Get return: " + latest_value
+
     
     # INSERT
     elif is_insert(command):
@@ -196,9 +201,9 @@ def execute(command, timestamp, src_addr, counter):
         key = get_key(command)
         value, get_time = globes.db.get(key)
         if value:
-            send_reply(value, counter, timestamp, src_addr)
+            send_reply(value, counter, get_time, src_addr)
         else:
-            send_reply("not found", counter, timestamp, src_addr)
+            send_reply("not found", counter, get_time, src_addr)
             return False  # key is not in the datastore
 
     elif is_insert(command):
@@ -275,4 +280,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
